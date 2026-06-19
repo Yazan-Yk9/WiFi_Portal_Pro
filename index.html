@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول إلى الشبكة</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef2f3; text-align: center; padding-top: 100px; }
+        .box { background: white; padding: 30px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
+        input[type="text"] { width: 80%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; text-align: center; }
+        button { background: #28a745; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 85%; }
+        .msg { margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>نظام الوصول للإنترنت 🔒</h2>
+        <p>يرجى إدخال كود الوصول الممنوح لك لتفعيل الخدمة:</p>
+        <input type="text" id="wifiCode" placeholder="أدخل الكود هنا">
+        <br>
+        <button onclick="submitCode()">تفعيل الإنترنت</button>
+        <div id="statusMessage" class="msg"></div>
+    </div>
+
+    <script>
+        function submitCode() {
+            const code = document.getElementById('wifiCode').value;
+            const msgDiv = document.getElementById('statusMessage');
+            if(!code) { msgDiv.innerText = "الرجاء كتابة الكود أولاً"; msgDiv.style.color = "red"; return; }
+            
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    msgDiv.innerText = data.message; msgDiv.style.color = "green";
+                    setTimeout(() => { window.location.href = "https://google.com"; }, 1500);
+                } else {
+                    msgDiv.innerText = data.message; msgDiv.style.color = "red";
+                }
+            }).catch(() => { msgDiv.innerText = "خطأ في الاتصال بالسيرفر"; msgDiv.style.color = "red"; });
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,18 @@
+services:
+  wifi-portal:
+    build: .
+    container_name: wifi-portal-pro
+    network_mode: host
+    privileged: true
+    restart: unless-stopped
+    env_file:
+      - ./config/settings.env
+    volumes:
+      - ./app.py:/app/app.py
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./index.html:/var/www/html/index.html
+      - ./config/dnsmasq.conf:/etc/dnsmasq.conf
+      - ./config/blocklist.txt:/etc/blocklist.txt
+      - ./config/whitelist.txt:/etc/whitelist.txt
+      - ./data:/app/data
+
