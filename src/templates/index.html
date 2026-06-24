@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+ <!-- ============================================================
+🌐 Captive Portal Page
+============================================================ -->
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WiFi Login / تسجيل الدخول</title>
+    <style>
+        /* ========================================================
+        Reset & Base
+        ======================================================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        /* ========================================================
+        Main Container
+        ======================================================== */
+        .box { 
+            background: white; 
+            padding: 40px 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            width: 100%; 
+            max-width: 420px; 
+            text-align: center;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ========================================================
+        Header
+        ======================================================== */
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        h2 { 
+            color: #2c3e50; 
+            margin-bottom: 8px; 
+            font-size: 24px; 
+            font-weight: 700;
+        }
+        
+        .subtitle { 
+            color: #7f8c8d; 
+            font-size: 14px; 
+            margin-bottom: 25px; 
+            line-height: 1.6;
+        }
+        
+        /* ========================================================
+        Network Status
+        ======================================================== */
+        .network-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #495057;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-dot.connected {
+            background: #28a745;
+        }
+        
+        .status-dot.disconnected {
+            background: #dc3545;
+        }
+        
+        /* ========================================================
+        Input Field
+        ======================================================== */
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        input[type="text"] { 
+            width: 100%; 
+            padding: 14px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 12px; 
+            font-size: 18px; 
+            text-align: center; 
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        input[type="text"]:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        input[type="text"]:disabled {
+            background: #e9ecef;
+            cursor: not-allowed;
+        }
+        
+        /* ========================================================
+        Submit Button
+        ======================================================== */
+        button { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            font-size: 16px; 
+            font-weight: 600;
+            border-radius: 12px; 
+            cursor: pointer; 
+            width: 100%; 
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        button:hover:not(:disabled) { 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active:not(:disabled) { 
+            transform: scale(0.98); 
+        }
+        
+        button:disabled { 
+            opacity: 0.6; 
+            cursor: not-allowed;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        button.loading .spinner {
+            display: inline-block;
+        }
+        
+        button.loading .btn-text {
+            display: none;
+        }
+        
+        /* ========================================================
+        Messages
+        ======================================================== */
+        .msg { 
+            margin-top: 20px; 
+            font-weight: 600; 
+            font-size: 15px; 
+            min-height: 22px; 
+            line-height: 1.6;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .msg.show {
+            display: block;
+        }
+        
+        .msg.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .msg.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .msg.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* ========================================================
+        Footer / تذييل الصفحة
+        ======================================================== */
+        .footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+            font-size: 13px;
+            color: #6c757d;
+        }
+        
+        /* ========================================================
+        Responsive
+        ======================================================== */
+        @media (max-width: 480px) {
+            .box { padding: 30px 20px; }
+            h2 { font-size: 20px; }
+            input[type="text"] { font-size: 16px; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <!-- ====================================================
+        Header
+        ==================================================== -->
+        <span class="icon">🌐</span>
+        <h2>WiFi Access System</h2>
+        <h2 style="font-size:18px; color:#667eea;">نظام الوصول للإنترنت</h2>
+        <p class="subtitle">
+            Enter your access code to activate internet on this device<br>
+            أدخل كود الوصول لتفعيل الإنترنت على هذا الجهاز
+        </p>
+        
+        <!-- ====================================================
+        Network Status
+        ==================================================== -->
+        <div class="network-status">
+            <span class="status-dot connected"></span>
+            <span>Connected / متصل</span>
+        </div>
+        
+        <!-- ====================================================
+        Input Field
+        ==================================================== -->
+        <div class="input-group">
+            <input type="text" id="wifiCode" 
+                   placeholder="Enter code / أدخل الكود" 
+                   autocomplete="off" autofocus 
+                   maxlength="10" 
+                   onkeypress="handleKeyPress(event)">
+        </div>
+        
+        <!-- ====================================================
+        Submit Button
+        ==================================================== -->
+        <button id="submitBtn" onclick="submitCode()">
+            <span class="btn-text">🚀 Activate / تفعيل</span>
+            <span class="spinner"></span>
+        </button>
+        
+        <!-- ====================================================
+        Status Message
+        ==================================================== -->
+        <div id="statusMessage" class="msg"></div>
+        
+        <!-- ====================================================
+        Footer
+        ==================================================== -->
+        <div class="footer">
+            <span>📡 Secure Network | شبكة آمنة</span>
+        </div>
+    </div>
+
+    <!-- ========================================================
+    JavaScript - Client Logic
+    ======================================================== -->
+    <script>
+        /**
+         * Handle Enter key press
+         */
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                submitCode();
+            }
+        }
+
+        /**
+         * Submit code to server
+         */
+        function submitCode() {
+            const codeInput = document.getElementById('wifiCode');
+            const submitBtn = document.getElementById('submitBtn');
+            const msgDiv = document.getElementById('statusMessage');
+            const code = codeInput.value.trim();
+
+            // Validate input
+            if(!code) { 
+                showMessage("Please enter a code / الرجاء إدخال الكود", "error");
+                return; 
+            }
+            
+            if(code.length < 4) {
+                showMessage("Code too short (min 4 characters) / الكود قصير جداً", "error");
+                return;
+            }
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            showMessage("Checking code... / جاري التحقق...", "info");
+
+            // Send request to server
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            })
+            .then(async res => {
+                const data = await res.json();
+                if(!res.ok) {
+                    throw new Error(data.message || 'Server error / خطأ في الخادم');
+                }
+                return data;
+            })
+            .then(data => {
+                if(data.status === 'success') {
+                    showMessage("✅ " + data.message + " Redirecting... / جاري التحويل...", "success");
+                    codeInput.disabled = true;
+                    
+                    // Redirect to Google after success
+                    setTimeout(() => { 
+                        window.location.href = "http://gstatic.com";
+                    }, 2000);
+                } else {
+                    showMessage("❌ " + (data.message || "Error / خطأ"), "error");
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('loading');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage("❌ " + error.message, "error");
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+            });
+        }
+
+        /**
+         * Show status message
+         */
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('statusMessage');
+            msgDiv.textContent = text;
+            msgDiv.className = 'msg show ' + type;
+        }
+
+        // Focus on input on load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('wifiCode').focus();
+        });
+    </script>
+</body>
+</html>

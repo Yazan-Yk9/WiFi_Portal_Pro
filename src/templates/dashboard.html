@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard / لوحة التحكم</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: system-ui, sans-serif; background: #f7fafc; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logout-btn {
+            background: #e53e3e;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover { background: #c53030; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stat-number { font-size: 32px; font-weight: bold; }
+        .stat-label { color: #718096; font-size: 14px; margin-top: 5px; }
+        .stat-box.total .stat-number { color: #4a5568; }
+        .stat-box.active .stat-number { color: #48bb78; }
+        .stat-box.used .stat-number { color: #ed8936; }
+        .stat-box.expired .stat-number { color: #fc8181; }
+        
+        /* شريط العمليات المطور */
+        .actions-wrapper {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .actions-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 320px;
+        }
+        .actions-card h3 {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 12px;
+        }
+        .actions-card form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .actions-card select, .actions-card input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            background: #fff;
+        }
+        .actions-card select { flex: 1; min-width: 150px; }
+        .actions-card input { flex: 1; min-width: 140px; }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-generate { background: #48bb78; color: white; flex: 1; min-width: 150px; }
+        .btn-generate:hover { background: #38a169; }
+        .btn-whitelist { background: #3182ce; color: white; flex: 1; min-width: 140px; }
+        .btn-whitelist:hover { background: #2b6cb0; }
+        
+        .table-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        td { white-space: nowrap; }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-active { background: #c6f6d5; color: #22543d; }
+        .badge-used { background: #fefcbf; color: #744210; }
+        .badge-expired { background: #fed7d7; color: #9b2c2c; }
+        .btn-delete {
+            background: #fed7d7;
+            color: #9b2c2c;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-delete:hover { background: #feb2b2; }
+        code { background: #f7fafc; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+        
+        @media (max-width: 768px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .actions-wrapper { flex-direction: column; }
+            .actions-card { width: 100%; }
+            .actions-card form { flex-direction: column; align-items: stretch; }
+            .actions-card select, .actions-card input, .btn { width: 100%; }
+            th, td { padding: 8px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>📊 WiFi Dashboard / لوحة تحكم الواي فاي</h2>
+            <a href="/admin/logout" class="logout-btn">Logout / تسجيل الخروج</a>
+        </div>
+
+        <!-- صناديق الإحصائيات الحية -->
+        <div class="stats">
+            <div class="stat-box total">
+                <div class="stat-number">{{ total }}</div>
+                <div class="stat-label">Total / الإجمالي</div>
+            </div>
+            <div class="stat-box active">
+                <div class="stat-number">{{ active }}</div>
+                <div class="stat-label">Active / نشط</div>
+            </div>
+            <div class="stat-box used">
+                <div class="stat-number">{{ used }}</div>
+                <div class="stat-label">Used / مستخدم</div>
+            </div>
+            <div class="stat-box expired">
+                <div class="stat-number">{{ expired }}</div>
+                <div class="stat-label">Expired / منتهي</div>
+            </div>
+        </div>
+
+        <div class="actions-wrapper">
+            <!-- كرت توليد الأكواد وقسائم المشتركين -->
+            <div class="actions-card">
+                <h3>⚡ توليد كود جديد / Generate Voucher</h3>
+                <form method="POST" action="/admin/generate">
+                    <select name="duration">
+                        <option value="1h">1 Hour / ساعة</option>
+                        <option value="2h">2 Hours / ساعتين</option>
+                        <option value="4h">4 Hours / 4 ساعات</option>
+                        <option value="8h">8 Hours / 8 ساعات</option>
+                        <option value="1d">1 Day / يوم</option>
+                        <option value="2d">2 Days / يومين</option>
+                        <option value="1w">1 Week / أسبوع</option>
+                        <option value="1m">1 Month / شهر</option>
+                        <option value="permanent">Permanent / دائم</option>
+                    </select>
+                    <button type="submit" class="btn btn-generate">توليد كود</button>
+                </form>
+            </div>
+            
+            <!-- 🟢 كرت حقن وإضافة جهاز للقائمة البيضاء حياً بدون قاعدة بيانات -->
+            <div class="actions-card">
+                <h3>➕ إضافة للقائمة البيضاء / Add to Whitelist</h3>
+                <form method="POST" action="/admin/add-whitelist">
+                    <input type="text" name="whitelist_ip" placeholder="عنوان IP (مثال: 192.168.50.99)" required pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$">
+                    <input type="text" name="whitelist_comment" placeholder="وصف الجهاز (مثال: شاشة العرض)" required>
+                    <button type="submit" class="btn btn-whitelist">تفعيل العبور</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- جدول المراقبة وجلب البيانات الحية -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code / الكود</th>
+                        <th>Duration / المدة</th>
+                        <th>Status / الحالة</th>
+                        <th>Expiry / الانتهاء</th>
+                        <th>IP / العنوان الرقمي</th>
+                        <th>MAC / البصمة الفيزيائية</th>
+                        <th>Created / الإنشاء</th>
+                        <th>Control / إدارة الجهاز</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td><strong>{{ row[0] }}</strong></td>
+                        <td>{{ row[1] }}</td>
+                        <td>
+                            {% if row[2] == 'active' %}
+                                <span class="badge badge-active">Active / نشط</span>
+                            {% elif row[2] == 'used' %}
+                                <span class="badge badge-used">Used / مستخدم</span>
+                            {% else %}
+                                <span class="badge badge-expired">Expired / منتهي</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row[3] or '-' }}</td>
+                        <td><code>{{ row[4] or '-' }}</code></td>
+                        <td><code>{{ row[5] or '-' }}</code></td>
+                        <td>{{ row[6] or '-' }}</td>
+                        <!-- 🟢 إجراء الحذف والتدمير الفوري لقنوات العبور في جدار الحماية وطرد المتصل -->
+                        <td>
+                            <form action="/admin/delete/{{ row[0] }}" method="POST" style="display:inline;" 
+                                  onsubmit="return confirm('⚠️ تحذير حرج: هل أنت متأكد من حذف هذا الكود وطرد جهازه من جدار الحماية فوراً؟');">
+                                <button type="submit" class="btn-delete">
+                                    🗑️ حذف وطرد
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
+

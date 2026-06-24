@@ -1,18 +1,33 @@
 services:
-  wifi-portal:
-    build: .
+  wifi-portal-pro:
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: wifi-portal-pro
+    image: wifi-portal-pro:1.0
+    hostname: wifi-portal-pro
     network_mode: host
-    privileged: true
     restart: unless-stopped
+    privileged: true
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+      - 8.8.4.4
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
     env_file:
       - ./config/settings.env
     volumes:
-      - ./app.py:/app/app.py
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./index.html:/var/www/html/index.html
+      - ./data:/app/data
+      - ./logs:/var/log
+      - ./src:/app/src
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/hostapd.conf:/etc/hostapd/hostapd.conf
       - ./config/dnsmasq.conf:/etc/dnsmasq.conf
       - ./config/blocklist.txt:/etc/blocklist.txt
       - ./config/whitelist.txt:/etc/whitelist.txt
-      - ./data:/app/data
-
+    devices:
+      - /dev/net/tun:/dev/net/tun
+      - /dev/bus/usb:/dev/bus/usb

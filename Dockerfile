@@ -1,37 +1,29 @@
 FROM alpine:latest
 
-RUN apk update && \
-    apk add --no-cache hostapd dnsmasq iptables iw wireless-tools curl sqlite python3 py3-pip nginx
+RUN apk update && apk add --no-cache hostapd dnsmasq iptables iw wireless-tools conntrack-tools nginx curl sqlite python3 py3-pip
 
-# تثبيت Flask عبر pip لضمان عدم الاعتماد على مستودعات Alpine المتقلبة
-RUN pip3 install --no-cache-dir flask --break-system-packages
+RUN python3 -m pip install --no-cache-dir flask --break-system-packages
 
-WORKDIR /app
-COPY hostapd.conf /etc/hostapd/hostapd.conf
+RUN mkdir -p /app/data \
+             /var/www/html \
+             /var/log/nginx \
+             /var/lib/nginx/logs \
+             /etc/hostapd \
+             /var/lib/misc
 
-COPY aliases.sh /etc/profile.d/aliases.sh
+COPY src/ /app/src
+COPY config/nginx.conf /etc/nginx/nginx.conf
+COPY config/hostapd.conf /etc/hostapd/hostapd.conf
+COPY config/dnsmasq.conf /etc/dnsmasq.conf
+COPY scripts/entrypoint.sh /entrypoint.sh
+COPY scripts/aliases.sh /etc/profile.d/aliases.sh
+COPY src/templates/index.html /var/www/html/index.html
 
-# سكربت الإقلاع الذكي لإدارة جدار الحماية والخدمات
-CMD awk '{print "address=/"$1"/0.0.0.0/"}' /etc/blocklist.txt > /etc/dnsmasq.adblock.conf && \
-    ip link set $WIFI_IFACE up && \
-    ip addr add $GATEWAY_IP/24 dev $WIFI_IFACE && \
-    iptables -t nat -A POSTROUTING -o $WAN_IFACE -j MASQUERADE && \
-    # قراءة ملف الاستثناء وتمرير الـ PS4 تلقائياً
-    if [ -f /etc/whitelist.txt ]; then \
-        while read -r ip; do \
-            if [ ! -z "$ip" ]; then \
-                iptables -I FORWARD -s "$ip" -j ACCEPT && \
-                iptables -t nat -I PREROUTING -s "$ip" -j ACCEPT; \
-            fi; \
-        done < /etc/whitelist.txt; \
-    fi && \
-    # توجيه بقية الأجهزة غير المسجلة إلى صفحة الكود
-    iptables -t nat -A PREROUTING -i $WIFI_IFACE -p tcp --dport 80 -j DNAT --to-destination $GATEWAY_IP:80 && \
-    iptables -A FORWARD -i $WIFI_IFACE -j DROP && \
-    # تشغيل الخدمات
-    python3 /app/app.py & \
-    nginx && \
-    echo "address=/#/$GATEWAY_IP" > /etc/dnsmasq.portal.conf && \
-    dnsmasq --conf-file=/etc/dnsmasq.conf --addn-hosts=/etc/dnsmasq.portal.conf --addn-hosts=/etc/dnsmasq.adblock.conf && \
-    hostapd /etc/hostapd/hostapd.conf
+RUN chmod +x /entrypoint.sh && \
+    chown -R nginx:nginx /var/www/html && \
+    chown -R nginx:nginx /var/log/nginx && \
+    chown -R nginx:nginx /var/lib/nginx
 
+ENV ENV="/etc/profile.d/aliases.sh"
+
+ENTRYPOINT ["/entrypoint.sh"]

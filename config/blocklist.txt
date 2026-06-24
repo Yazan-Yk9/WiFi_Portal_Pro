@@ -1,4 +1,8 @@
-tiktok.com
-facebook.com
-fbcdn.net
-instagram.com
+# ===================================================================
+# Blocklist - Domains to block
+# ===================================================================
+# Each line contains one domain
+# Example / مثال:
+# facebook.com
+# youtube.com
+# twitter.com
