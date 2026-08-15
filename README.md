@@ -1,4 +1,11 @@
-# 🚀 Flexible Wi-Fi Captive Portal with Static IP & Ad-Blocking
+# Flexible Wi-Fi Captive Portal with Static IP & Ad-Blocking
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+
 
 A production-ready, lightweight Docker-based Captive Portal system using Alpine Linux. It turns an Ubuntu Server with a USB Wi-Fi adapter into a fully managed, time-limited Wi-Fi Access Point featuring a Web Admin Dashboard, SQLite storage, content filtering, and automated client bypassing.
 
